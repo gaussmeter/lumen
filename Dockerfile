@@ -1,0 +1,12 @@
+FROM alpine
+RUN apk add --no-cache python3 && \
+    apk add --no-cache --virtual build \
+                       make \
+                       gcc \
+                       libc-dev \
+                       linux-headers \
+                       python3-dev && \
+    pip3 --disable-pip-version-check --no-cache-dir install rpi_ws281x \
+                                                            adafruit-circuitpython-neopixel \
+                                                            RPi.GPIO && \
+    apk del build
