@@ -37,18 +37,17 @@ def wheel(pos):
     return (r, g, b) if ORDER == neopixel.RGB or ORDER == neopixel.GRB else (r, g, b, 0)
 
 def lumen(queue, event):
-  global pixel_index
-  global pixel
+  global lumenCommand
   logging.debug('start lumen')
   while True:
     while not queue.empty():
-      command = queue.get()
-      logging.debug(command)
+      lumenCommand = queue.get()
+      logging.debug(lumenCommand)
     if event.isSet():
       logging.debug('stop lumen')
       return
     time.sleep(.01)
-    if command['animation'] == "rainbow":
+    if lumenCommand['animation'] == "rainbow":
       for j in range(255):
         for i in range(num_pixels):
           pixel_index = (i * 255 // num_pixels) + j
@@ -62,7 +61,7 @@ logging.basicConfig(
 
 class MyServer(BaseHTTPRequestHandler):
   def do_GET(self):
-    global lastLumenPUT
+    global lumenCommand
     if self.path == "/lumen": 
       self.send_response(200)
       self.send_header("Content-type", "json")
@@ -74,7 +73,6 @@ class MyServer(BaseHTTPRequestHandler):
       self.end_headers()
 
   def do_PUT(self):
-    global lumenCommand 
     if self.path == "/lumen":
       length = self.headers['Content-Length']
       lumenCommand = parseCommand(self.rfile.read(int(length)).decode("utf-8")) 
@@ -82,13 +80,13 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_response(200)
         self.send_header("Content-type", "json")
         self.end_headers()
-        self.wfile.write(bytes('{ "response" : "ok" }', "utf-8"))
+        self.wfile.write(bytes('{"response":"ok"}', "utf-8"))
         lumenQueue.put(lumenCommand)
       else:
         self.send_response(400)
         self.send_header("Content-type", "json")
         self.end_headers()
-        self.wfile.write(bytes('{ "response" : "fail"}', "utf-8"))
+        self.wfile.write(bytes('{"response":"fail"}', "utf-8"))
     else:
       self.send_response(404)
       self.end_headers()
