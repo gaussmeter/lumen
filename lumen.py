@@ -47,12 +47,17 @@ def lumen(queue, event):
       logging.debug('stop lumen')
       return
     time.sleep(.01)
+    #rainbow
     if lumenCommand['animation'] == "rainbow":
       for j in range(255):
         for i in range(num_pixels):
           pixel_index = (i * 255 // num_pixels) + j
           pixels[i] = wheel(pixel_index & 255)
         pixels.show()
+    #fill
+    if lumenCommand['animation'] == "fill":
+      pixels.fill((lumenCommand['r'],lumenCommand['g'],lumenCommand['b'],lumenCommand['w']))
+      pixels.show()
 
 logging.basicConfig(
   level=logging.DEBUG,
@@ -92,10 +97,17 @@ class MyServer(BaseHTTPRequestHandler):
       self.end_headers()
 
 def parseCommand(payload):
+  command = {}
   try:
-    return json.loads(payload)
+    command = json.loads(payload)
   except:
     return None
+  command['animation'] = command.get('animation', 'fill')
+  command['r'] = command.get('r', 0)
+  command['g'] = command.get('g', 0)
+  command['b'] = command.get('b', 0)
+  command['w'] = command.get('w', 0)
+  return command
 
 myServer = HTTPServer(('', hostPort), MyServer)
 print(time.asctime(), "Server Starts - *:%s" % (hostPort))
