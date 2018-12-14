@@ -1,4 +1,5 @@
-FROM alpine
+FROM resin/rpi-alpine
+RUN [ "cross-build-start" ]
 RUN apk add --no-cache python3 && \
     apk add --no-cache --virtual build \
                        make \
@@ -10,3 +11,4 @@ RUN apk add --no-cache python3 && \
                                                             adafruit-circuitpython-neopixel \
                                                             RPi.GPIO && \
     apk del build
+RUN [ "cross-build-end" ]
