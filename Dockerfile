@@ -12,3 +12,5 @@ RUN apk add --no-cache python3 && \
                                                             RPi.GPIO && \
     apk del build
 RUN [ "cross-build-end" ]
+ADD lumen.py lumen.py
+CMD /usr/bin/python3 -u ./lumen.py
