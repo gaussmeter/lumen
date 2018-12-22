@@ -1,19 +1,22 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
+import os
 import time
 import threading
 import logging
 import queue
 import json
-import board
-import neopixel
+if os.uname()[4] != "x86_64":
+  import board
+  import neopixel
 
 hostPort = 9000
 
 lumenCommand = { 'animation' : 'None' } 
-pixel_pin = board.D18
 num_pixels = 12
-ORDER = neopixel.GRBW
-pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=0.2, auto_write=False,pixel_order=ORDER)
+if os.uname()[4] != "x86_64":
+  pixel_pin = board.D18
+  ORDER = neopixel.GRBW
+  pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=0.2, auto_write=False,pixel_order=ORDER)
 
 def wheel(pos):
     # Input a value 0 to 255 to get a color value.
@@ -48,16 +51,17 @@ def lumen(queue, event):
       return
     time.sleep(.01)
     #rainbow
-    if lumenCommand['animation'] == "rainbow":
-      for j in range(255):
-        for i in range(num_pixels):
-          pixel_index = (i * 255 // num_pixels) + j
-          pixels[i] = wheel(pixel_index & 255)
+    if os.uname()[4] != "x86_64":
+      if lumenCommand['animation'] == "rainbow":
+        for j in range(255):
+          for i in range(num_pixels):
+            pixel_index = (i * 255 // num_pixels) + j
+            pixels[i] = wheel(pixel_index & 255)
+          pixels.show()
+      #fill
+      if lumenCommand['animation'] == "fill":
+        pixels.fill((lumenCommand['r'],lumenCommand['g'],lumenCommand['b'],lumenCommand['w']))
         pixels.show()
-    #fill
-    if lumenCommand['animation'] == "fill":
-      pixels.fill((lumenCommand['r'],lumenCommand['g'],lumenCommand['b'],lumenCommand['w']))
-      pixels.show()
 
 logging.basicConfig(
   level=logging.DEBUG,
