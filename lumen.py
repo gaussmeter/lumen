@@ -5,6 +5,14 @@ import threading
 import logging
 import queue
 import json
+
+logging.basicConfig(
+  level=logging.DEBUG,
+  format='(%(threadName)-10s) %(message)s',
+)
+
+logging.debug(os.uname())
+
 if os.uname()[4] != "x86_64":
   import board
   import neopixel
@@ -63,10 +71,6 @@ def lumen(queue, event):
         pixels.fill((lumenCommand['r'],lumenCommand['g'],lumenCommand['b'],lumenCommand['w']))
         pixels.show()
 
-logging.basicConfig(
-  level=logging.DEBUG,
-  format='(%(threadName)-10s) %(message)s',
-)
 
 class MyServer(BaseHTTPRequestHandler):
   def do_GET(self):
