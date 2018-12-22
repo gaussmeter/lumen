@@ -6,14 +6,7 @@ import logging
 import queue
 import json
 
-logging.basicConfig(
-  level=logging.DEBUG,
-  format='(%(threadName)-10s) %(message)s',
-)
-
-logging.debug(os.uname())
-
-if os.uname()[4] != "x86_64":
+if os.environ.get('SKIP_PIXELS') == None:
   import board
   import neopixel
 
@@ -21,10 +14,15 @@ hostPort = 9000
 
 lumenCommand = { 'animation' : 'None' } 
 num_pixels = 12
-if os.uname()[4] != "x86_64":
+if os.environ.get('SKIP_PIXELS') == None:
   pixel_pin = board.D18
   ORDER = neopixel.GRBW
   pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=0.2, auto_write=False,pixel_order=ORDER)
+
+logging.basicConfig(
+  level=logging.DEBUG,
+  format='(%(threadName)-10s) %(message)s',
+)
 
 def wheel(pos):
     # Input a value 0 to 255 to get a color value.
@@ -59,7 +57,7 @@ def lumen(queue, event):
       return
     time.sleep(.01)
     #rainbow
-    if os.uname()[4] != "x86_64":
+    if os.environ.get('SKIP_PIXELS') == None:
       if lumenCommand['animation'] == "rainbow":
         for j in range(255):
           for i in range(num_pixels):
@@ -118,7 +116,11 @@ def parseCommand(payload):
   return command
 
 myServer = HTTPServer(('', hostPort), MyServer)
-print(time.asctime(), "Server Starts - *:%s" % (hostPort))
+logging.debug(time.asctime() + "Server Start - *:" + str(hostPort))
+logging.debug(os.uname())
+if os.environ.get('SKIP_PIXELS') != None:
+  logging.debug("SKIP_PIXELS != None -- emulation mode...")
+
 
 lumenQueue = queue.Queue()
 lumenQueue.put(lumenCommand)
