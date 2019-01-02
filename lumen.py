@@ -56,8 +56,8 @@ def lumen(queue, event):
       logging.debug('stop lumen')
       return
     time.sleep(.01)
-    #rainbow
     if os.environ.get('SKIP_PIXELS') == None:
+      #rainbow
       if lumenCommand['animation'] == "rainbow":
         for j in range(255):
           for i in range(num_pixels):
