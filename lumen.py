@@ -113,6 +113,12 @@ def parseCommand(payload):
   command['g'] = command.get('g', 0)
   command['b'] = command.get('b', 0)
   command['w'] = command.get('w', 0)
+  rgbw = command.get('rgbw', None)
+  if rgbw != None and len(rgbw.split(',')) == 4:
+    command['r'] = rgbw.split(',')[0]
+    command['g'] = rgbw.split(',')[1]
+    command['b'] = rgbw.split(',')[2]
+    command['w'] = rgbw.split(',')[3]
   return command
 
 myServer = HTTPServer(('', hostPort), MyServer)
