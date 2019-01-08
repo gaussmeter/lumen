@@ -109,16 +109,16 @@ def parseCommand(payload):
   except:
     return None
   command['animation'] = command.get('animation', 'fill')
-  command['r'] = command.get('r', 0)
-  command['g'] = command.get('g', 0)
-  command['b'] = command.get('b', 0)
-  command['w'] = command.get('w', 0)
+  command['r'] = int(command.get('r', 0))
+  command['g'] = int(command.get('g', 0))
+  command['b'] = int(command.get('b', 0))
+  command['w'] = int(command.get('w', 0))
   rgbw = command.get('rgbw', None)
   if rgbw != None and len(rgbw.split(',')) == 4:
-    command['r'] = rgbw.split(',')[0]
-    command['g'] = rgbw.split(',')[1]
-    command['b'] = rgbw.split(',')[2]
-    command['w'] = rgbw.split(',')[3]
+    command['r'] = int(rgbw.split(',')[0])
+    command['g'] = int(rgbw.split(',')[1])
+    command['b'] = int(rgbw.split(',')[2])
+    command['w'] = int(rgbw.split(',')[3])
   return command
 
 myServer = HTTPServer(('', hostPort), MyServer)
