@@ -139,8 +139,6 @@ lumenThread = threading.Thread(
 )
 lumenThread.start()
 
-
-
 try:
   myServer.serve_forever()
 except KeyboardInterrupt:
