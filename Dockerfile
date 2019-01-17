@@ -1,4 +1,4 @@
-FROM resin/rpi-alpine
+FROM balenalib/rpi-alpine
 RUN [ "cross-build-start" ]
 RUN apk add --no-cache python3 && \
     apk add --no-cache --virtual build \
