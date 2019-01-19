@@ -12,58 +12,96 @@ if os.environ.get('SKIP_PIXELS') == None:
 
 hostPort = 9000
 
-lumenCommand = { 'animation' : 'None' } 
+#lumenCommand = { 'animation' : 'None' }
+
 num_pixels = 12
 if os.environ.get('SKIP_PIXELS') == None:
   pixel_pin = board.D18
   ORDER = neopixel.GRBW
-  pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=0.2, auto_write=False,pixel_order=ORDER)
+  pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=1, auto_write=False,pixel_order=ORDER)
+
+# -=-=-=- from ender =-=-=-
+def apply_bright(color, brightness):
+  outcolor = [0, 0, 0, 0]
+  for i in range(len(color)):
+    outcolor[i] = round(color[i] * (brightness / 255))
+  return outcolor
+
+
+def colorcycle(dist):
+  if 0 <= dist % 768 <= 255:
+    return (dist % 256, 0, 255 - dist % 256, 0)
+  elif 256 <= dist % 768 <= 511:
+    return (255 - dist % 256, dist % 256, 0, 0)
+  elif 512 <= dist % 768 <= 767:
+    return (0, 255 - dist % 256, dist % 256, 0)
+
+# -=-=-=- end fromr =-=-=-
 
 logging.basicConfig(
   level=logging.DEBUG,
   format='(%(threadName)-10s) %(message)s',
 )
 
-def wheel(pos):
-    # Input a value 0 to 255 to get a color value.
-    # The colours are a transition r - g - b - back to r.
-    if pos < 0 or pos > 255:
-        r = g = b = 0
-    elif pos < 85:
-        r = int(pos * 3)
-        g = int(255 - pos*3)
-        b = 0
-    elif pos < 170:
-        pos -= 85
-        r = int(255 - pos*3)
-        g = 0
-        b = int(pos*3)
-    else:
-        pos -= 170
-        r = 0
-        g = int(pos*3)
-        b = int(255 - pos*3)
-    return (r, g, b) if ORDER == neopixel.RGB or ORDER == neopixel.GRB else (r, g, b, 0)
-
 def lumen(queue, event):
   global lumenCommand
+  cycledistance = 0
+  distalong = 0
+  direction = 1
   logging.debug('start lumen')
   while True:
-    while not queue.empty():
+    if not queue.empty():
       lumenCommand = queue.get()
       logging.debug(lumenCommand)
+      bright = lumenCommand['bright']
+      color1 = apply_bright([lumenCommand['r'], lumenCommand['g'], lumenCommand['b'], lumenCommand['w']], bright)
+      color2 = apply_bright([lumenCommand['r2'], lumenCommand['g2'], lumenCommand['b2'], lumenCommand['w2']], bright)
+      velocity = 10
+      length = lumenCommand['length']
+      pucklength = round(num_pixels * length / 100)
     if event.isSet():
       logging.debug('stop lumen')
       return
-    time.sleep(.01)
     if os.environ.get('SKIP_PIXELS') == None:
+      #bargraph
+      if lumenCommand['animation'] == 'bargraph':
+        distacross = num_pixels - round((100 - length) / 100 * num_pixels)
+        for i in range(distacross, num_pixels):
+          pixels[i] = color2
+        for i in range(0, distacross):
+          pixels[i] = color1
+        pixels.show()
+      #cylon
+      if lumenCommand['animation'] == 'cylon':
+        for i in range(distalong, distalong + pucklength):
+          pixels[i] = color1
+        for i in range(0, distalong):
+          pixels[i] = color2
+          #print(i)
+        #print("AND")
+        for i in range(distalong + pucklength, num_pixels):
+          pixels[i] = color2
+          #print(i)
+        #print("---------")
+        if (distalong + pucklength + direction) > num_pixels or (distalong + direction) < 0:
+          direction = direction * -1
+        pixels.show()
+        distalong = distalong + direction
       #rainbow
       if lumenCommand['animation'] == "rainbow":
-        for j in range(255):
-          for i in range(num_pixels):
-            pixel_index = (i * 255 // num_pixels) + j
-            pixels[i] = wheel(pixel_index & 255)
-          pixels.show()
+        distacross = num_pixels - round((100 - length) / 100 * num_pixels)
+        increment = 768 / distacross
+        for i in range(distacross, num_pixels):
+          #print(i)
+          pixels[i] = color2
+        for i in range(0, distacross):
+          #print("Printing this pixel:", colorcycle(cycledistance + round(i * increment)))
+          pixels[i] = apply_bright(colorcycle(cycledistance + round(i * increment)), bright)
+        pixels.show()
+        cycledistance = round(cycledistance + velocity / 1.5)
+        if cycledistance >= 768:
+          cycledistance = cycledistance % 768
+        #print("CD = ", cycledistance)
       #fill
       if lumenCommand['animation'] == "fill":
         pixels.fill((lumenCommand['r'],lumenCommand['g'],lumenCommand['b'],lumenCommand['w']))
@@ -109,6 +147,9 @@ def parseCommand(payload):
   except:
     return None
   command['animation'] = command.get('animation', 'fill')
+  command['length'] = command.get('length', 100)
+  command['bright'] = command.get('bright', 255)
+  command['velocity'] = command.get('velocity', 100)
   command['r'] = int(command.get('r', 0))
   command['g'] = int(command.get('g', 0))
   command['b'] = int(command.get('b', 0))
@@ -119,7 +160,19 @@ def parseCommand(payload):
     command['g'] = int(rgbw.split(',')[1])
     command['b'] = int(rgbw.split(',')[2])
     command['w'] = int(rgbw.split(',')[3])
+  command['r2'] = int(command.get('r2', 0))
+  command['g2'] = int(command.get('g2', 0))
+  command['b2'] = int(command.get('b2', 0))
+  command['w2'] = int(command.get('w2', 0))
+  rgbw = command.get('rgbw2', None)
+  if rgbw != None and len(rgbw.split(',')) == 4:
+    command['r2'] = int(rgbw.split(',')[0])
+    command['g2'] = int(rgbw.split(',')[1])
+    command['b2'] = int(rgbw.split(',')[2])
+    command['w2'] = int(rgbw.split(',')[3])
   return command
+
+lumenCommand = parseCommand('{}')
 
 myServer = HTTPServer(('', hostPort), MyServer)
 logging.debug(time.asctime() + "Server Start - *:" + str(hostPort))
