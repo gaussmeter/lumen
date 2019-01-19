@@ -142,6 +142,9 @@ def parseCommand(payload):
     return None
   command['animation'] = command.get('animation', 'fill')
   command['length'] = command.get('length', 100)
+  percent = command.get('percent', None)
+  if percent != None:
+    command['length'] = percent
   command['bright'] = command.get('bright', 255)
   command['velocity'] = command.get('velocity', 100)
   command['r'] = int(command.get('r', 0))
