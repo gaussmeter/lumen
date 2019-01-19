@@ -20,7 +20,6 @@ if os.environ.get('SKIP_PIXELS') == None:
   ORDER = neopixel.GRBW
   pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=1, auto_write=False,pixel_order=ORDER)
 
-# -=-=-=- from ender =-=-=-
 def apply_bright(color, brightness):
   outcolor = [0, 0, 0, 0]
   for i in range(len(color)):
@@ -36,7 +35,6 @@ def colorcycle(dist):
   elif 512 <= dist % 768 <= 767:
     return (0, 255 - dist % 256, dist % 256, 0)
 
-# -=-=-=- end fromr =-=-=-
 
 logging.basicConfig(
   level=logging.DEBUG,
@@ -78,12 +76,8 @@ def lumen(queue, event):
           pixels[i] = color1
         for i in range(0, distalong):
           pixels[i] = color2
-          #print(i)
-        #print("AND")
         for i in range(distalong + pucklength, num_pixels):
           pixels[i] = color2
-          #print(i)
-        #print("---------")
         if (distalong + pucklength + direction) > num_pixels or (distalong + direction) < 0:
           direction = direction * -1
         pixels.show()
@@ -93,16 +87,13 @@ def lumen(queue, event):
         distacross = num_pixels - round((100 - length) / 100 * num_pixels)
         increment = 768 / distacross
         for i in range(distacross, num_pixels):
-          #print(i)
           pixels[i] = color2
         for i in range(0, distacross):
-          #print("Printing this pixel:", colorcycle(cycledistance + round(i * increment)))
           pixels[i] = apply_bright(colorcycle(cycledistance + round(i * increment)), bright)
         pixels.show()
         cycledistance = round(cycledistance + velocity / 1.5)
         if cycledistance >= 768:
           cycledistance = cycledistance % 768
-        #print("CD = ", cycledistance)
       #fill
       if lumenCommand['animation'] == "fill":
         pixels.fill((lumenCommand['r'],lumenCommand['g'],lumenCommand['b'],lumenCommand['w']))
