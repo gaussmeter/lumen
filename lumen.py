@@ -50,13 +50,14 @@ def lumen(queue, event):
   direction = 1
   logging.debug('start lumen')
   while True:
+    start = time.time()
     if not queue.empty():
       lumenCommand = queue.get()
       logging.debug(lumenCommand)
       bright = lumenCommand['bright']
       color1 = apply_bright([lumenCommand['r'], lumenCommand['g'], lumenCommand['b'], lumenCommand['w']], bright)
       color2 = apply_bright([lumenCommand['r2'], lumenCommand['g2'], lumenCommand['b2'], lumenCommand['w2']], bright)
-      velocity = 10
+      velocity = lumenCommand['velocity']
       length = lumenCommand['length']
       pucklength = round(num_pixels * length / 100)
     if event.isSet():
@@ -106,6 +107,8 @@ def lumen(queue, event):
       if lumenCommand['animation'] == "fill":
         pixels.fill((lumenCommand['r'],lumenCommand['g'],lumenCommand['b'],lumenCommand['w']))
         pixels.show()
+    while time.time() < (start + 2/velocity):
+      time.sleep(.01)
 
 
 class MyServer(BaseHTTPRequestHandler):
