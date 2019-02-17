@@ -185,12 +185,12 @@ def parseCommand(payload):
   command['g2'] = int(command.get('g2', 0))
   command['b2'] = int(command.get('b2', 0))
   command['w2'] = int(command.get('w2', 0))
-  rgbw = command.get('rgbw2', None)
-  if rgbw != None and len(rgbw.split(',')) == 4:
-    command['r2'] = int(rgbw.split(',')[0])
-    command['g2'] = int(rgbw.split(',')[1])
-    command['b2'] = int(rgbw.split(',')[2])
-    command['w2'] = int(rgbw.split(',')[3])
+  rgbw2 = command.get('rgbw2', None)
+  if rgbw2 != None and len(rgbw2.split(',')) == 4:
+    command['r2'] = int(rgbw2.split(',')[0])
+    command['g2'] = int(rgbw2.split(',')[1])
+    command['b2'] = int(rgbw2.split(',')[2])
+    command['w2'] = int(rgbw2.split(',')[3])
   return command
 
 lumenCommand = parseCommand('{}')
