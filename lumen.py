@@ -57,7 +57,13 @@ def lumen(queue, event):
       color2 = apply_bright([lumenCommand['r2'], lumenCommand['g2'], lumenCommand['b2'], lumenCommand['w2']], bright)
       velocity = lumenCommand['velocity']
       length = lumenCommand['length']
+      #cylon
       pucklength = round(num_pixels * length / 100)
+      #midward
+      max_dist = round(num_pixels * length / 100)
+      midcolor = [0, 0, 0, 0]
+      for i in range(4):
+        midcolor[i] = round((color1[i] + color2[i]) / 2)
     if event.isSet():
       logging.debug('stop lumen')
       return
@@ -94,6 +100,24 @@ def lumen(queue, event):
         cycledistance = round(cycledistance + velocity / 1.5)
         if cycledistance >= 768:
           cycledistance = cycledistance % 768
+      #midward
+      if lumenCommand['animation'] == "midward":
+        if distalong == max_dist or distalong == 0:
+          direction = direction * -1
+        distalong = distalong + direction
+        conjugate = num_pixels - round((num_pixels - max_dist) * (distalong / max_dist))
+        print(distalong, ",", conjugate)
+        if direction == 1:
+          for i in range(0, distalong):
+            pixels[i] = color1
+          for i in range(conjugate, num_pixels):
+            pixels[i] = color2
+        if direction == -1:
+          for i in range(distalong, max_dist):
+            pixels[i] = color2
+          for i in range(max_dist + 1, conjugate):
+            pixels[i] = color1
+        pixels[max_dist] = midcolor
       #fill
       if lumenCommand['animation'] == "fill":
         pixels.fill((lumenCommand['r'],lumenCommand['g'],lumenCommand['b'],lumenCommand['w']))
