@@ -44,7 +44,6 @@ logging.basicConfig(
 def lumen(queue, event):
   global lumenCommand
   cycledistance = 0
-  distalong = 0
   direction = 1
   logging.debug('start lumen')
   while True:
@@ -57,6 +56,7 @@ def lumen(queue, event):
       color2 = apply_bright([lumenCommand['r2'], lumenCommand['g2'], lumenCommand['b2'], lumenCommand['w2']], bright)
       velocity = lumenCommand['velocity']
       length = lumenCommand['length']
+      distalong = 0
       #cylon
       pucklength = round(num_pixels * length / 100)
       #midward
