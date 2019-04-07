@@ -79,7 +79,6 @@ def lumen(queue, event):
       #cylon
       if lumenCommand['animation'] == 'cylon':
         for i in range(distalong, distalong + pucklength):
-          logging.debug(" i: " + str(i))
           pixels[i] = color1
         for i in range(0, distalong):
           pixels[i] = color2
