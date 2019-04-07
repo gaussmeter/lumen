@@ -58,9 +58,9 @@ def lumen(queue, event):
       length = lumenCommand['length']
       distalong = 0
       #cylon
-      pucklength = round(num_pixels * length / 100)
+      pucklength = round(num_pixels -1 * length / 100)
       #midward
-      max_dist = round(num_pixels * length / 100)
+      max_dist = round(num_pixels -1  * length / 100)
       midcolor = [0, 0, 0, 0]
       for i in range(4):
         midcolor[i] = round((color1[i] + color2[i]) / 2)
