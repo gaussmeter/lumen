@@ -2,8 +2,8 @@ FROM balenalib/rpi-alpine
 RUN [ "cross-build-start" ]
 RUN apk add --no-cache python3 && \
     apk add --no-cache --virtual build \
-                       make \
                        gcc \
+                       make \
                        libc-dev \
                        linux-headers \
                        python3-dev && \
