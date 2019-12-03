@@ -1,7 +1,7 @@
-FROM balenalib/rpi-alpine
+FROM balenalib/rpi-alpine:3.6
 RUN [ "cross-build-start" ]
 RUN apk update && \
-    apk add --no-cache python3 && \
+    apk add --no-cache 'python3=3.6.8-r0' && \
     apk add --no-cache --virtual build \
                        gcc \
                        make \
