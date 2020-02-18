@@ -169,6 +169,8 @@ def parseCommand(payload):
   percent = command.get('percent', None)
   if percent != None:
     command['length'] = percent
+  if command['length'] > 100:
+    command['length'] = 100
   command['bright'] = command.get('bright', 255)
   command['velocity'] = command.get('velocity', 100)
   command['r'] = int(command.get('r', 0))
