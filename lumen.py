@@ -35,6 +35,8 @@ def colorcycle(dist):
   elif 512 <= dist % 768 <= 767:
     return (0, 255 - dist % 256, dist % 256, 0)
 
+def clamp(n, minn, maxn):
+  return max(min(maxn, n), minn)
 
 logging.basicConfig(
   level=logging.DEBUG,
@@ -44,6 +46,7 @@ logging.basicConfig(
 def lumen(queue, event):
   global lumenCommand
   cycledistance = 0
+  distalong = 0
   direction = 1
   logging.debug('start lumen')
   while True:
@@ -56,11 +59,10 @@ def lumen(queue, event):
       color2 = apply_bright([lumenCommand['r2'], lumenCommand['g2'], lumenCommand['b2'], lumenCommand['w2']], bright)
       velocity = lumenCommand['velocity']
       length = lumenCommand['length']
-      distalong = 0
       #cylon
-      pucklength = round(num_pixels -1 * length / 100)
+      pucklength = round(num_pixels * length / 100)
       #midward
-      max_dist = round(num_pixels -1  * length / 100)
+      max_dist = round(num_pixels * length / 100)
       midcolor = [0, 0, 0, 0]
       for i in range(4):
         midcolor[i] = round((color1[i] + color2[i]) / 2)
