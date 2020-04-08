@@ -14,7 +14,11 @@ hostPort = 9000
 
 #lumenCommand = { 'animation' : 'None' }
 
-num_pixels = 12
+if os.environ.get('PIXELS') != None:
+    num_pixels = os.environ.get('PIXELS')
+else:
+    num_pixels = 12
+
 if os.environ.get('SKIP_PIXELS') == None:
   pixel_pin = board.D18
   ORDER = neopixel.GRBW
