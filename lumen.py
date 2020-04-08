@@ -14,12 +14,12 @@ hostPort = 9000
 
 #lumenCommand = { 'animation' : 'None' }
 
-if os.environ.get('PIXELS') != None:
-    num_pixels = os.environ.get('PIXELS')
-else:
-    num_pixels = 12
+num_pixels = 12
 
-logging.debug(num_pixels)
+if os.environ.get('PIXELS') != None:
+    num_pixels = int(os.environ.get('PIXELS'))
+
+print(num_pixels)
 
 if os.environ.get('SKIP_PIXELS') == None:
   pixel_pin = board.D18
