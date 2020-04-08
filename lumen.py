@@ -19,6 +19,8 @@ if os.environ.get('PIXELS') != None:
 else:
     num_pixels = 12
 
+logging.debug(num_pixels)
+
 if os.environ.get('SKIP_PIXELS') == None:
   pixel_pin = board.D18
   ORDER = neopixel.GRBW
