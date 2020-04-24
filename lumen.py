@@ -64,6 +64,8 @@ def lumen(queue, event):
       color1 = apply_bright([lumenCommand['r'], lumenCommand['g'], lumenCommand['b'], lumenCommand['w']], bright)
       color2 = apply_bright([lumenCommand['r2'], lumenCommand['g2'], lumenCommand['b2'], lumenCommand['w2']], bright)
       velocity = lumenCommand['velocity']
+      if velocity == 0:
+        velocity = 1
       length = lumenCommand['length']
       #cylon
       pucklength = round(num_pixels * length / 100)
@@ -80,18 +82,18 @@ def lumen(queue, event):
       if lumenCommand['animation'] == 'bargraph':
         distacross = num_pixels - round((100 - length) / 100 * num_pixels)
         for i in range(distacross, num_pixels):
-          pixels[i] = color2
+          pixelWrapper(i, color2)
         for i in range(0, distacross):
-          pixels[i] = color1
+          pixelWrapper(i, color1)
         pixels.show()
       #cylon
       if lumenCommand['animation'] == 'cylon':
         for i in range(distalong, distalong + pucklength):
-          pixels[i] = color1
+          pixelWrapper(i, color1)
         for i in range(0, distalong):
-          pixels[i] = color2
+          pixelWrapper(i, color2)
         for i in range(distalong + pucklength, num_pixels):
-          pixels[i] = color2
+          pixelWrapper(i, color2)
         if (distalong + pucklength + direction) > num_pixels or (distalong + direction) < 0:
           direction = direction * -1
         pixels.show()
@@ -99,11 +101,13 @@ def lumen(queue, event):
       #rainbow
       if lumenCommand['animation'] == "rainbow":
         distacross = num_pixels - round((100 - length) / 100 * num_pixels)
+        if distacross == 0:
+          distacross = 1
         increment = 768 / distacross
         for i in range(distacross, num_pixels):
-          pixels[i] = color2
+          pixelWrapper(i, color2)
         for i in range(0, distacross):
-          pixels[i] = apply_bright(colorcycle(cycledistance + round(i * increment)), bright)
+          pixelWrapper(i, apply_bright(colorcycle(cycledistance + round(i * increment)), bright))
         pixels.show()
         cycledistance = round(cycledistance + velocity / 1.5)
         if cycledistance >= 768:
@@ -113,19 +117,21 @@ def lumen(queue, event):
         if distalong == max_dist or distalong == 0:
           direction = direction * -1
         distalong = distalong + direction
+        if max_dist == 0:
+          max_dist = 1
         conjugate = num_pixels - round((num_pixels - max_dist) * (distalong / max_dist))
         print(distalong, ",", conjugate)
         if direction == 1:
           for i in range(0, distalong):
-            pixels[i] = color1
+            pixelWrapper(i, color1)
           for i in range(conjugate, num_pixels):
-            pixels[i] = color2
+            pixelWrapper(i, color2)
         if direction == -1:
           for i in range(distalong, max_dist):
-            pixels[i] = color2
+            pixelWrapper(i, color2)
           for i in range(max_dist + 1, conjugate):
-            pixels[i] = color1
-        pixels[max_dist] = midcolor
+            pixelWrapper(i, color1)
+        pixelWrapper(max_dist, midcolor)
       #fill
       if lumenCommand['animation'] == "fill":
         pixels.fill((lumenCommand['r'],lumenCommand['g'],lumenCommand['b'],lumenCommand['w']))
@@ -165,6 +171,12 @@ class MyServer(BaseHTTPRequestHandler):
     else:
       self.send_response(404)
       self.end_headers()
+
+def pixelWrapper(pixel, color):
+  try:
+    pixels[pixel] = color
+  except:
+    logging.debug("Pixel out of range: " + str(pixel))
 
 def parseCommand(payload):
   command = {}
