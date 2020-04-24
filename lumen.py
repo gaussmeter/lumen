@@ -54,6 +54,8 @@ def lumen(queue, event):
   cycledistance = 0
   distalong = 0
   direction = 1
+  pulseDirection = 0
+  color = [0,0,0,0]
   logging.debug('start lumen')
   while True:
     start = time.time()
@@ -72,6 +74,8 @@ def lumen(queue, event):
       #midward
       max_dist = round(num_pixels * length / 100)
       midcolor = [0, 0, 0, 0]
+      #pulse
+      color = color1
       for i in range(4):
         midcolor[i] = round((color1[i] + color2[i]) / 2)
     if event.isSet():
@@ -136,6 +140,22 @@ def lumen(queue, event):
       if lumenCommand['animation'] == "fill":
         pixels.fill((lumenCommand['r'],lumenCommand['g'],lumenCommand['b'],lumenCommand['w']))
         pixels.show()
+      #pulse
+      if lumenCommand['animation'] == "pulse":
+        if pulseDirection == 0:
+          color = rgbwTransition(color, color2)
+          if color == color2:
+            pulseDirection = 1
+        if pulseDirection == 1:
+          color = rgbwTransition(color, color1)
+          if color == color1:
+            pulseDirection = 0
+        distacross = num_pixels - round((100 - length) / 100 * num_pixels)
+        for i in range(distacross, num_pixels):
+          pixelWrapper(i, [0,0,0,0])
+        for i in range(0, distacross):
+          pixelWrapper(i, color)
+        pixels.show()
     while time.time() < (start + 2/velocity):
       time.sleep(.01)
 
@@ -171,6 +191,19 @@ class MyServer(BaseHTTPRequestHandler):
     else:
       self.send_response(404)
       self.end_headers()
+
+def rgbwTransition(color1, color2):
+  outcolor = [0, 0, 0, 0]
+  for i in range(len(outcolor)):
+    outcolor[i] = valueTransition(color1[i], color2[i])
+  return outcolor
+
+def valueTransition(valueFrom, valueTo):
+  if valueFrom > valueTo:
+    return valueFrom - 1
+  if valueFrom < valueTo:
+    return valueFrom + 1
+  return valueFrom
 
 def pixelWrapper(pixel, color):
   try:
