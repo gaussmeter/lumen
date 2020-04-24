@@ -114,13 +114,13 @@ def lumen(queue, event):
           cycledistance = cycledistance % 768
       #midward
       if lumenCommand['animation'] == "midward":
-        if distalong == max_dist or distalong == 0:
+        if distalong >= max_dist or distalong <= 0:
           direction = direction * -1
         distalong = distalong + direction
-        if max_dist == 0:
+        if max_dist <= 0:
           max_dist = 1
         conjugate = num_pixels - round((num_pixels - max_dist) * (distalong / max_dist))
-        print(distalong, ",", conjugate)
+        #print(distalong, ",", conjugate)
         if direction == 1:
           for i in range(0, distalong):
             pixelWrapper(i, color1)
