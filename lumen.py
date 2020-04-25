@@ -138,7 +138,7 @@ def lumen(queue, event):
         pixelWrapper(max_dist, midcolor)
       #fill
       if lumenCommand['animation'] == "fill":
-        pixels.fill((lumenCommand['r'],lumenCommand['g'],lumenCommand['b'],lumenCommand['w']))
+        pixels.fill(color1)
         pixels.show()
       #pulse
       if lumenCommand['animation'] == "pulse":
