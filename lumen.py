@@ -56,6 +56,9 @@ def lumen(queue, event):
   direction = 1
   pulseDirection = 0
   color = [0,0,0,0]
+  midcolor = [0, 0, 0, 0]
+  pucklength = 0
+  lastpucklength = 0
   logging.debug('start lumen')
   while True:
     start = time.time()
@@ -70,14 +73,28 @@ def lumen(queue, event):
         velocity = 1
       length = lumenCommand['length']
       #cylon
-      pucklength = round(num_pixels * length / 100)
+      if lumenCommand['animation'] == "cylon":
+        pucklength = round(num_pixels * length / 100)
+        # if pucklengh changes reset distalong and directoin to prevent 
+        # stuck puck. 
+        if pucklength != lastpucklength:
+          lastpucklength = pucklength
+          distalong = 0
+          direction = 1
       #midward
-      max_dist = round(num_pixels * length / 100)
-      midcolor = [0, 0, 0, 0]
+      if lumenCommand['animation'] == "midward":
+        max_dist = round(num_pixels * length / 100)
+        if max_dist <= 0:
+          max_dist = 1
+        for i in range(4):
+          midcolor[i] = round((color1[i]+color2[i])/2)
+        distalong = 1
+        direction = 1
       #pulse
-      color = color1
-      for i in range(4):
-        midcolor[i] = round((color1[i] + color2[i]) / 2)
+      if lumenCommand['animation'] == "pusle":
+        color = color1
+        for i in range(4):
+          midcolor[i] = round((color1[i] + color2[i]) / 2)
     if event.isSet():
       logging.debug('stop lumen')
       return
@@ -121,8 +138,6 @@ def lumen(queue, event):
         if distalong >= max_dist or distalong <= 0:
           direction = direction * -1
         distalong = distalong + direction
-        if max_dist <= 0:
-          max_dist = 1
         conjugate = num_pixels - round((num_pixels - max_dist) * (distalong / max_dist))
         #print(distalong, ",", conjugate)
         if direction == 1:
@@ -136,6 +151,7 @@ def lumen(queue, event):
           for i in range(max_dist + 1, conjugate):
             pixelWrapper(i, color1)
         pixelWrapper(max_dist, midcolor)
+        pixels.show()
       #fill
       if lumenCommand['animation'] == "fill":
         pixels.fill(color1)
@@ -208,8 +224,9 @@ def valueTransition(valueFrom, valueTo):
 def pixelWrapper(pixel, color):
   try:
     pixels[pixel] = color
-  except:
-    logging.debug("Pixel out of range: " + str(pixel))
+    #logging.debug(msg="pixel: " + str(pixel) + ", color: " + str(color) )
+  except Exception as e:
+    logging.debug("doh! ", exc_info=e)
 
 def parseCommand(payload):
   command = {}
