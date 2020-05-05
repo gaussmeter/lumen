@@ -98,80 +98,75 @@ def lumen(queue, event):
     if event.isSet():
       logging.debug('stop lumen')
       return
-    if os.environ.get('SKIP_PIXELS') == None:
-      #bargraph
-      if lumenCommand['animation'] == 'bargraph':
-        distacross = num_pixels - round((100 - length) / 100 * num_pixels)
-        for i in range(distacross, num_pixels):
-          pixelWrapper(i, color2)
-        for i in range(0, distacross):
-          pixelWrapper(i, color1)
-        pixels.show()
-      #cylon
-      if lumenCommand['animation'] == 'cylon':
-        for i in range(distalong, distalong + pucklength):
-          pixelWrapper(i, color1)
+    #bargraph
+    if lumenCommand['animation'] == 'bargraph':
+      distacross = num_pixels - round((100 - length) / 100 * num_pixels)
+      for i in range(distacross, num_pixels):
+        pixelWrapper(i, color2)
+      for i in range(0, distacross):
+        pixelWrapper(i, color1)
+    #cylon
+    if lumenCommand['animation'] == 'cylon':
+      for i in range(distalong, distalong + pucklength):
+        pixelWrapper(i, color1)
+      for i in range(0, distalong):
+        pixelWrapper(i, color2)
+      for i in range(distalong + pucklength, num_pixels):
+        pixelWrapper(i, color2)
+      if (distalong + pucklength + direction) > num_pixels or (distalong + direction) < 0:
+        direction = direction * -1
+      distalong = distalong + direction
+    #rainbow
+    if lumenCommand['animation'] == "rainbow":
+      distacross = num_pixels - round((100 - length) / 100 * num_pixels)
+      if distacross == 0:
+        distacross = 1
+      increment = 768 / distacross
+      for i in range(distacross, num_pixels):
+        pixelWrapper(i, color2)
+      for i in range(0, distacross):
+        pixelWrapper(i, apply_bright(colorcycle(cycledistance + round(i * increment)), bright))
+      cycledistance = round(cycledistance + velocity / 1.5)
+      if cycledistance >= 768:
+        cycledistance = cycledistance % 768
+    #midward
+    if lumenCommand['animation'] == "midward":
+      if distalong >= max_dist or distalong <= 0:
+        direction = direction * -1
+      distalong = distalong + direction
+      conjugate = num_pixels - round((num_pixels - max_dist) * (distalong / max_dist))
+      #print(distalong, ",", conjugate)
+      if direction == 1:
         for i in range(0, distalong):
+          pixelWrapper(i, color1)
+        for i in range(conjugate, num_pixels):
           pixelWrapper(i, color2)
-        for i in range(distalong + pucklength, num_pixels):
+      if direction == -1:
+        for i in range(distalong, max_dist):
           pixelWrapper(i, color2)
-        if (distalong + pucklength + direction) > num_pixels or (distalong + direction) < 0:
-          direction = direction * -1
-        pixels.show()
-        distalong = distalong + direction
-      #rainbow
-      if lumenCommand['animation'] == "rainbow":
-        distacross = num_pixels - round((100 - length) / 100 * num_pixels)
-        if distacross == 0:
-          distacross = 1
-        increment = 768 / distacross
-        for i in range(distacross, num_pixels):
-          pixelWrapper(i, color2)
-        for i in range(0, distacross):
-          pixelWrapper(i, apply_bright(colorcycle(cycledistance + round(i * increment)), bright))
-        pixels.show()
-        cycledistance = round(cycledistance + velocity / 1.5)
-        if cycledistance >= 768:
-          cycledistance = cycledistance % 768
-      #midward
-      if lumenCommand['animation'] == "midward":
-        if distalong >= max_dist or distalong <= 0:
-          direction = direction * -1
-        distalong = distalong + direction
-        conjugate = num_pixels - round((num_pixels - max_dist) * (distalong / max_dist))
-        #print(distalong, ",", conjugate)
-        if direction == 1:
-          for i in range(0, distalong):
-            pixelWrapper(i, color1)
-          for i in range(conjugate, num_pixels):
-            pixelWrapper(i, color2)
-        if direction == -1:
-          for i in range(distalong, max_dist):
-            pixelWrapper(i, color2)
-          for i in range(max_dist + 1, conjugate):
-            pixelWrapper(i, color1)
-        pixelWrapper(max_dist, midcolor)
-        pixels.show()
-      #fill
-      if lumenCommand['animation'] == "fill":
-        pixels.fill(color1)
-        pixels.show()
-      #pulse
-      if lumenCommand['animation'] == "pulse":
-        if pulseDirection == 0:
-          color = rgbwTransition(color, color2)
-          if color == color2:
-            pulseDirection = 1
-        if pulseDirection == 1:
-          color = rgbwTransition(color, color1)
-          if color == color1:
-            pulseDirection = 0
-        distacross = num_pixels - round((100 - length) / 100 * num_pixels)
-        for i in range(distacross, num_pixels):
-          pixelWrapper(i, [0,0,0,0])
-        for i in range(0, distacross):
-          pixelWrapper(i, color)
-        pixels.show()
+        for i in range(max_dist + 1, conjugate):
+          pixelWrapper(i, color1)
+      pixelWrapper(max_dist, midcolor)
+    #fill
+    if lumenCommand['animation'] == "fill":
+      pixelFillWrapper(color1)
+    #pulse
+    if lumenCommand['animation'] == "pulse":
+      if pulseDirection == 0:
+        color = rgbwTransition(color, color2)
+        if color == color2:
+          pulseDirection = 1
+      if pulseDirection == 1:
+        color = rgbwTransition(color, color1)
+        if color == color1:
+          pulseDirection = 0
+      distacross = num_pixels - round((100 - length) / 100 * num_pixels)
+      for i in range(distacross, num_pixels):
+        pixelWrapper(i, [0,0,0,0])
+      for i in range(0, distacross):
+        pixelWrapper(i, color)
+    if os.environ.get('SKIP_PIXELS') == None:
+      pixels.show()
     while time.time() < (start + 2/velocity):
       time.sleep(.01)
 
@@ -221,10 +216,17 @@ def valueTransition(valueFrom, valueTo):
     return valueFrom + 1
   return valueFrom
 
+def pixelFillWrapper(color):
+  if os.environ.get('SKIP_PIXELS') == None:
+    pixels.fill(color)
+    pixels.show()
+
 def pixelWrapper(pixel, color):
   try:
-    pixels[pixel] = color
-    #logging.debug(msg="pixel: " + str(pixel) + ", color: " + str(color) )
+    if os.environ.get('SKIP_PIXELS') == None:
+      pixels[pixel] = color
+    else:
+      logging.debug(msg="pixel: " + str(pixel) + ", color: " + str(color) )
   except Exception as e:
     logging.debug("doh! ", exc_info=e)
 
