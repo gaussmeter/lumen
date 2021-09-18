@@ -250,7 +250,7 @@ def pixelWrapper(pixel, color):
 
 def parseMaxBright(payload):
   try:
-    return json.loads(payload).get('max_bright',255)
+    return clamp(scale(json.loads(payload).get('max_bright',255), 0, 100, 0, 255), 0, 255)
   except:
     return 255 
 
@@ -267,7 +267,7 @@ def parseCommand(payload):
     command['length'] = percent
   if command['length'] > 100:
     command['length'] = 100
-  command['bright'] = command.get('bright', 255)
+  command['bright'] = clamp(scale(command.get('bright', 100), 0, 100, 0, 255), 0, 255)
   command['velocity'] = command.get('velocity', 100)
   command['r'] = int(command.get('r', 0))
   command['g'] = int(command.get('g', 0))
@@ -290,6 +290,12 @@ def parseCommand(payload):
     command['b2'] = int(rgbw2.split(',')[2])
     command['w2'] = int(rgbw2.split(',')[3])
   return command
+
+def scale(x, in_min, in_max, out_min, out_max):
+    return int((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
+
+def clamp(num, min_value, max_value):
+   return max(min(num, max_value), min_value)
 
 lumenCommand = parseCommand('{}')
 
