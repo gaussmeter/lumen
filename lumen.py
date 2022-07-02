@@ -15,6 +15,7 @@ hostPort = 9000
 #lumenCommand = { 'animation' : 'None' }
 
 num_pixels = 12
+max_bright = 255 
 
 if os.environ.get('PIXELS') != None:
     num_pixels = int(os.environ.get('PIXELS'))
@@ -199,6 +200,21 @@ class MyServer(BaseHTTPRequestHandler):
         self.send_header("Content-type", "json")
         self.end_headers()
         self.wfile.write(bytes('{"response":"fail"}', "utf-8"))
+    elif self.path == "/lumen/max_bright":
+      length = self.headers['Content-Length']
+      global max_bright 
+      max_bright = parseMaxBright(self.rfile.read(int(length)).decode("utf-8")) 
+      if max_bright != None:
+        self.send_response(200)
+        self.send_header("Content-type", "json")
+        self.end_headers()
+        self.wfile.write(bytes('{"response":"ok"}', "utf-8"))
+        logging.debug("new max bright value: " + str(max_bright))
+      else:
+        self.send_response(400)
+        self.send_header("Content-type", "json")
+        self.end_headers()
+        self.wfile.write(bytes('{"response":"fail"}', "utf-8"))
     else:
       self.send_response(404)
       self.end_headers()
@@ -218,17 +234,25 @@ def valueTransition(valueFrom, valueTo):
 
 def pixelFillWrapper(color):
   if os.environ.get('SKIP_PIXELS') == None:
-    pixels.fill(color)
+    pixels.fill(apply_bright(color, max_bright))
     pixels.show()
+  else:
+    logging.debug(msg="color: " + str(color) + ", max_bright: " + str(max_bright))
 
 def pixelWrapper(pixel, color):
   try:
     if os.environ.get('SKIP_PIXELS') == None:
-      pixels[pixel] = color
+      pixels[pixel] = apply_bright(color, max_bright)
     else:
-      logging.debug(msg="pixel: " + str(pixel) + ", color: " + str(color) )
+      logging.debug(msg="pixel: " + str(pixel) + ", color: " + str(color) + ", max_bright: " + str(max_bright))
   except Exception as e:
     logging.debug("doh! ", exc_info=e)
+
+def parseMaxBright(payload):
+  try:
+    return clamp(scale(json.loads(payload).get('max_bright',255), 0, 100, 0, 255), 0, 255)
+  except:
+    return 255 
 
 def parseCommand(payload):
   command = {}
@@ -243,7 +267,7 @@ def parseCommand(payload):
     command['length'] = percent
   if command['length'] > 100:
     command['length'] = 100
-  command['bright'] = command.get('bright', 255)
+  command['bright'] = clamp(scale(command.get('bright', 100), 0, 100, 0, 255), 0, 255)
   command['velocity'] = command.get('velocity', 100)
   command['r'] = int(command.get('r', 0))
   command['g'] = int(command.get('g', 0))
@@ -266,6 +290,12 @@ def parseCommand(payload):
     command['b2'] = int(rgbw2.split(',')[2])
     command['w2'] = int(rgbw2.split(',')[3])
   return command
+
+def scale(x, in_min, in_max, out_min, out_max):
+    return int((x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min)
+
+def clamp(num, min_value, max_value):
+   return max(min(num, max_value), min_value)
 
 lumenCommand = parseCommand('{}')
 
